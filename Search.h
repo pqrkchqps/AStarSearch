@@ -1,0 +1,22 @@
+#ifndef SEARCH
+#define SEARCH
+#include "Path.h"
+
+class Search {
+	public:
+		Search (Point &start, Point &end);
+		bool exploreFront();
+		Path getSolution();
+			
+	private:
+		std::vector<Path> paths;
+		double f(Point &x, Point &start);
+		double h(Point &x, Point &end);
+		Point start;
+		Point end;
+		double alpha;
+		double beta;
+		double theta;
+		Path solution;
+};
+#endif

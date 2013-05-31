@@ -1,0 +1,88 @@
+#include "Search.h"
+#include "Map.h"
+#include "Point.h"
+#include <math.h>
+#include <iostream>
+#include <limits>
+#include <algorithm>
+
+const double a = 1;
+const double b = 0;
+const double t = 1;
+
+Search::Search (Point &start, Point &end) :
+ start(start), end(end){
+	this->alpha = a;
+	this->beta = b;
+	this->theta = t;
+	Path start_path;
+	start_path.addNode(start, 0);
+	paths.push_back(start_path);
+}
+
+Path Search::getSolution(){
+	return this->solution;
+}
+
+bool Search::exploreFront(){
+	std::cout << "Still Exploring Front\n";
+	bool retval = false;
+	Path p = paths.back();
+	paths.pop_back();
+	Point tail = p.getEndNode();
+	std::vector<Point> n =	Map::getNeighbors(tail);
+	double cost = p.getCost();
+	double curcost;
+	for (std::vector<Point>::iterator cur = n.begin();
+				cur != n.end(); 
+				cur++) {
+
+		//calculate cost = f(x) + h(x)
+		curcost = f(*cur, start)
+			+ h(*cur, end)*theta + cost;
+
+		//Add a newpath to paths
+		Path newpath = p;
+		newpath.addNode(*cur, curcost);
+		paths.push_back(newpath);
+		std::sort(paths.begin(), paths.end());
+		std::cout << "inserted neighbor:"
+							<< " x=" << cur->getX()
+							<< " y=" << cur->getY() << "\n";
+
+
+		//Check for solution
+		if (cur->getX()==end.getX() && cur->getY()==end.getY()){
+			retval = true;
+			solution = newpath;
+		}
+
+		/*for (std::vector<Path>::iterator path = paths.begin();
+					path != paths.end();
+					path++) {
+			if (path->getCost() > curcost) {
+				paths.insert(path, newpath);
+				path = paths.end();
+				std::cout << "inserted neighbor:"
+									<< " x=" << path->getEndNode().getX()
+									<< " y=" << path->getEndNode().getY() << "\n";
+			}
+		}*/
+	}
+	return retval;
+}
+
+double Search::f(Point &x, Point &start) {
+	double dist = sqrt(
+				pow((start.getX()-x.getX()),2) + 
+				pow((start.getY()-x.getY()),2) );
+	double deltah = x.getH();
+	return this->alpha*dist
+			+ this->beta*deltah;
+}
+
+double Search::h(Point &x, Point &end) {
+	return sqrt(
+				pow((end.getX()-x.getX()),2) + 
+				pow((end.getY()-x.getY()),2) );
+}
